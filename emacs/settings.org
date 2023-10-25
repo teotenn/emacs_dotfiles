@@ -215,25 +215,14 @@ Find system name with =(system-name)=
 ;;   :init
 ;;   (setenv "DICPATH" (concat (getenv "HOME") "/Library/Spelling"))
 ;;   (setq ispell-program-name "C:\\Users\\teodorm3\\Bin\\Hunspell\\bin\\hunspell.exe"))
-(if (not (eq system-type 'windows-nt))
+
+(if (eq system-type 'gnu/linux)
     (use-package flyspell
-      :defer t
-      :if (and (eq system-type 'gnu/linux)
-	       (not tt/is-termux))
       :config
       ;; Check on the go for all text-based modes (org, md, etc)
       (add-hook 'text-mode-hook 'flyspell-mode)
       (setq ispell-list-command "--list")
       (setq ispell-program-name "aspell")))
-
-  ;; (use-package flyspell
-  ;;   :defer t
-  ;;   :if tt/is-termux
-  ;;   :config
-  ;;   (setq ispell-program-name (executable-find "hunspell")))
-
-
-  
  #+END_SRC
 
 * Magit
@@ -256,6 +245,14 @@ Find system name with =(system-name)=
   (setq undo-tree-history-directory-alist '(("." . "~/tmp/"))))
 
 ;; (setq undo-tree-history-directory-alist '(("." . "~/tmp")))
+#+end_src
+** i3/sway edit mode
+#+begin_src emacs-lisp
+(if (eq system-type 'gnu/linux)
+    (use-package i3wm-config-mode
+      :config
+      (add-to-list 'auto-mode-alist '("/sway/.*config.*/" . i3wm-config-mode))
+      (add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode))))
 #+end_src
 * Other packages
 ** Cheatsheet
@@ -586,30 +583,33 @@ Probably jedi is enough, however other python packages were installed in Sparky 
 
 More on python on emacs [[https://realpython.com/emacs-the-best-python-editor/#emacs-for-python-development-with-elpy]]
 #+BEGIN_SRC emacs-lisp
+;; Use this if not ipython
 ;;(setq python-shell-interpreter "python3")
 
-(use-package elpy
-  :if (eq system-type 'gnu/linux)
-  :init
-  (setq elpy-rpc-python-command "python3")
-  :config
-  (elpy-enable)
-  (setq python-shell-interpreter "jupyter"
-	python-shell-interpreter-args "console --simple-prompt"
-	python-shell-prompt-detect-failure-warning nil)
-  (add-to-list 'python-shell-completion-native-disabled-interpreters
-               "jupyter"))
+(if (eq system-type 'gnu/linux)
+    (progn
+      (use-package elpy
+	:if (eq system-type 'gnu/linux)
+	:init
+	(setq elpy-rpc-python-command "python3")
+	:config
+	(elpy-enable)
+	(setq python-shell-interpreter "jupyter"
+	      python-shell-interpreter-args "console --simple-prompt"
+	      python-shell-prompt-detect-failure-warning nil)
+	(add-to-list 'python-shell-completion-native-disabled-interpreters
+		     "jupyter"))
 
-(use-package jedi)
+      (use-package jedi)
 
-;; Auto formatting help
-;; Requires to install python "black"
-;; Use it by calling M-x blacken-buffer
-(use-package blacken)
+      ;; Auto formatting help
+      ;; Requires to install python "black"
+      ;; Use it by calling M-x blacken-buffer
+      (use-package blacken)
 
-;; Jupyter and iPython
-(use-package ein
-  :hook (ein:connect-mode-hook . ein:jedi-setup))
+      ;; Jupyter and iPython
+      (use-package ein
+	:hook (ein:connect-mode-hook . ein:jedi-setup))))
 #+END_SRC
 
 [[https://tkf.github.io/emacs-ipython-notebook/][ein documentation]] and a [[https://millejoh.github.io/emacs-ipython-notebook/][post on ein]]
