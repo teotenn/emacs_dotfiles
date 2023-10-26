@@ -521,14 +521,19 @@ utils::assignInNamespace(\"q\",
         modus-themes-bold-constructs t
 	modus-themes-to-toggle '(modus-operandi-tinted modus-vivendi-tinted))
 
-  ;; Maybe define some palette overrides, such as by using our presets
-  ;; (setq modus-themes-common-palette-overrides
-  ;;       modus-themes-preset-overrides-intense)
-
+  ;; tab bar
+  (setq modus-themes-common-palette-overrides
+	'((bg-tab-bar bg-cyan-nuanced)
+	  (bg-tab-current bg-magenta-intense)
+	  (bg-tab-other bg-cyan-subtle)))
   ;; Load the theme of your choice.
   (load-theme 'modus-vivendi-tinted :no-confirm)
   (define-key toggle-keymap (kbd "z") #'modus-themes-toggle)
   (define-key toggle-keymap (kbd "Z") #'modus-themes-select))
+
+;; tab bar mode
+(setq tab-bar-close-button-show nil)
+(setq tab-bar-new-button-show nil)
 
 (use-package counsel
   :after ivy
