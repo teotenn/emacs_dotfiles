@@ -509,6 +509,13 @@ utils::assignInNamespace(\"q\",
       (use-package ein
 	:hook (ein:connect-mode-hook . ein:jedi-setup))))
 
+(use-package tabspaces
+  :hook (after-init . tabspaces-mode)
+  :custom
+  (customize-set-variable 'tabspaces-default-tab "Base")
+  (customize-set-variable 'tabspaces-include-buffers '("*scratch*"))
+  (customize-set-variable 'tabspaces-use-filtered-buffers-as-default t))
+
 ;; All the icons
 (use-package all-the-icons)
 

@@ -614,6 +614,15 @@ More on python on emacs [[https://realpython.com/emacs-the-best-python-editor/#e
 
 [[https://tkf.github.io/emacs-ipython-notebook/][ein documentation]] and a [[https://millejoh.github.io/emacs-ipython-notebook/][post on ein]]
 
+* Workspaces
+#+begin_src emacs-lisp
+(use-package tabspaces
+  :hook (after-init . tabspaces-mode)
+  :custom
+  (customize-set-variable 'tabspaces-default-tab "Base")
+  (customize-set-variable 'tabspaces-include-buffers '("*scratch*"))
+  (customize-set-variable 'tabspaces-use-filtered-buffers-as-default t))
+#+end_src
 * Fonts and themes
 #+BEGIN_SRC emacs-lisp
 ;; All the icons
