@@ -402,31 +402,6 @@ utils::assignInNamespace(\"q\",
 ;; Map it to C-c `
 (define-key markdown-mode-map "\C-c`" 'rmarkdown-new-chunk)
 
-(use-package company
-  :config
-  ;; Turn on company-mode globally:
-  (add-hook 'after-init-hook 'global-company-mode)
-;; More customization options for company:
-(setq company-selection-wrap-around t
-      ;; Align annotations to the right tooltip border:
-      company-tooltip-align-annotations t
-      ;; Idle delay in seconds until completion starts automatically:
-      company-idle-delay 0.45
-      ;; Completion will start after typing two letters:
-      company-minimum-prefix-length 3
-      ;; Maximum number of candidates in the tooltip:
-      company-tooltip-limit 10))
-
-(use-package company-quickhelp
-  :custom
-  ;; Load company-quickhelp globally:
-  (company-quickhelp-mode)
-  ;; Time before display of documentation popup:
-  (setq company-quickhelp-delay nil))
-
-(eval-after-load 'company
-  '(define-key company-active-map (kbd "C-c h") #'company-quickhelp-manual-begin))
-
 (use-package org
   :ensure nil
   :bind
@@ -542,54 +517,6 @@ utils::assignInNamespace(\"q\",
 (setq tab-bar-close-button-show nil)
 (setq tab-bar-new-button-show nil)
 
-(use-package counsel
-  :after ivy
-  :config (counsel-mode))
-(use-package ivy
-  :defer 0.1
-  :diminish
-  :bind
-  (("C-c C-r" . ivy-resume)
-   ("C-x B" . ivy-switch-buffer-other-window))
-  :custom
-  (setq ivy-count-format "(%d/%d) ")
-  (setq ivy-use-virtual-buffers t)
-  (setq enable-recursive-minibuffers t)
-  :config
-  (ivy-mode))
-
-(use-package swiper
-  :after ivy
-  :bind (("C-s" . swiper)
-	 ("C-r" . swiper)))
-
-
-(setq ivy-initial-inputs-alist nil)
-
-(use-package smex)
-(smex-initialize)
-
-(use-package ivy-posframe
-  :init
-  (setq ivy-posframe-display-functions-alist
-    '((swiper                     . ivy-posframe-display-at-point)
-      (complete-symbol            . ivy-posframe-display-at-point)
-      (counsel-M-x                . ivy-display-function-fallback)
-      (counsel-esh-history        . ivy-posframe-display-at-window-center)
-      (counsel-describe-function  . ivy-display-function-fallback)
-      (counsel-describe-variable  . ivy-display-function-fallback)
-      (counsel-find-file          . ivy-display-function-fallback)
-      (counsel-recentf            . ivy-display-function-fallback)
-      (counsel-register           . ivy-posframe-display-at-frame-bottom-window-center)
-      (dmenu                      . ivy-posframe-display-at-frame-top-center)
-      (nil                        . ivy-posframe-display))
-    ivy-posframe-height-alist
-    '((swiper . 20)
-      (dmenu . 20)
-      (t . 10)))
-  :config
-  (ivy-posframe-mode 1)) ; 1 enables posframe-mode, 0 disables it.
-
 (use-package which-key
   :config
   (which-key-mode))
@@ -672,3 +599,109 @@ utils::assignInNamespace(\"q\",
                      gcs-done)))
 
 ;; Silence compiler warnings as they can be pretty disruptive (setq comp-async-report-warnings-errors nil)
+
+;;; Vertico
+(when (require 'vertico nil :noerror)
+  (require 'vertico-directory)
+  ;; Cycle back to top/bottom result when the edge is reached
+  (customize-set-variable 'vertico-cycle t)
+
+  ;; Start Vertico
+  (vertico-mode 1))
+
+;; The code below is not necessary because those are turn off by default
+;; on emacs, however they conflict with vertico and orderless so
+;; Is good to remember to turn them off.
+  ;; (with-eval-after-load 'crafted-defaults-config
+  ;;   (fido-mode -1)
+  ;;   (fido-vertical-mode -1)
+  ;;   (icomplete-mode -1)
+  ;;   (icomplete-vertical-mode -1)))
+
+;; To allow vertico keep history
+(use-package savehist
+:init
+(savehist-mode))
+
+;;; Marginalia
+(when (require 'marginalia nil :noerror)
+  ;; Configure Marginalia
+  (customize-set-variable 'marginalia-annotators
+			  '(marginalia-annotators-heavy
+			    marginalia-annotators-light
+			    nil))
+  (marginalia-mode 1))
+
+;;; Orderless
+(when (require 'orderless nil :noerror)
+  ;; Set up Orderless for better fuzzy matching
+  (customize-set-variable 'completion-styles '(orderless basic))
+  (customize-set-variable 'completion-category-overrides
+			  '((file (styles . (partial-completion))))))
+
+;; Since Consult doesn't need to be required, we assume the user wants these
+;; setting if it is installed (regardless of the installation method).
+(when (locate-library "consult")
+  ;; Set some consult bindings
+  (keymap-global-set "C-s" 'consult-line)
+  (keymap-set minibuffer-local-map "C-r" 'consult-history)
+
+  (setq completion-in-region-function #'consult-completion-in-region))
+
+;; Embark
+(when (require 'embark nil :noerror)
+
+  (keymap-global-set "<remap> <describe-bindings>" #'embark-bindings)
+  (keymap-global-set "C-." 'embark-act)
+
+  ;; Use Embark to show bindings in a key prefix with `C-h`
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  (when (require 'embark-consult nil :noerror)
+    (with-eval-after-load 'embark-consult
+      (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode))))
+
+;;; Corfu
+(when (require 'corfu nil :noerror)
+
+  (unless (display-graphic-p)
+    (when (require 'corfu-terminal nil :noerror)
+      (corfu-terminal-mode +1)))
+
+  ;; Setup corfu for popup like completion
+  (customize-set-variable 'corfu-cycle t)        ; Allows cycling through candidates
+  (customize-set-variable 'corfu-auto t)         ; Enable auto completion
+  (customize-set-variable 'corfu-auto-prefix 2)  ; Complete with less prefix keys
+
+  (global-corfu-mode 1)
+  (when (require 'corfu-popupinfo nil :noerror)
+
+    (corfu-popupinfo-mode 1)
+    (eldoc-add-command #'corfu-insert)
+    (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
+    (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
+    (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle)))
+
+(when (require 'cape nil :noerror)
+;; Setup Cape for better completion-at-point support and more
+
+;; Add useful defaults completion sources from cape
+(add-to-list 'completion-at-point-functions #'cape-file)
+(add-to-list 'completion-at-point-functions #'cape-dabbrev)
+
+;; Silence the pcomplete capf, no errors or messages!
+;; Important for corfu
+(advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
+
+;; Ensure that pcomplete does not write to the buffer
+;; and behaves as a pure `completion-at-point-function'.
+(advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
+
+;; No auto-completion or completion-on-quit in eshell
+(defun crafted-completion-corfu-eshell ()
+  "Special settings for when using corfu with eshell."
+  (setq-local corfu-quit-at-boundary t
+              corfu-quit-no-match t
+              corfu-auto nil)
+  (corfu-mode))
+(add-hook 'eshell-mode-hook #'crafted-completion-corfu-eshell))

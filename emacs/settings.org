@@ -486,31 +486,52 @@ And in general for [[https://lintr.r-lib.org/index.html][lintr]] and [[https://s
  #+END_SRC
 
 * Company (auto complete code)
-#+BEGIN_SRC emacs-lisp
-(use-package company
-  :config
-  ;; Turn on company-mode globally:
-  (add-hook 'after-init-hook 'global-company-mode)
-;; More customization options for company:
-(setq company-selection-wrap-around t
-      ;; Align annotations to the right tooltip border:
-      company-tooltip-align-annotations t
-      ;; Idle delay in seconds until completion starts automatically:
-      company-idle-delay 0.45
-      ;; Completion will start after typing two letters:
-      company-minimum-prefix-length 3
-      ;; Maximum number of candidates in the tooltip:
-      company-tooltip-limit 10))
+#+BEGIN_SRC emacs
+  (use-package company
+    :config
+    ;; Turn on company-mode globally:
+    (add-hook 'after-init-hook 'global-company-mode)
+    ;; integration for capf
+    ;; (setq completion-at-point-functions
+    ;; 	(list
+    ;; 	 (cape-company-to-capf
+    ;; 	  (apply-partially #'company--multi-backend-adapter
+    ;; 			   '(company-dabbrev company-elisp)))))
+  ;; More customization options for company:
+  (setq company-selection-wrap-around t
+	;; Align annotations to the right tooltip border:
+	company-tooltip-align-annotations t
+	;; Idle delay in seconds until completion starts automatically:
+	company-idle-delay 0.45
+	;; Completion will start after typing two letters:
+	company-minimum-prefix-length 3
+	;; Maximum number of candidates in the tooltip:
+	company-tooltip-limit 10))
 
-(use-package company-quickhelp
-  :custom
-  ;; Load company-quickhelp globally:
-  (company-quickhelp-mode)
-  ;; Time before display of documentation popup:
-  (setq company-quickhelp-delay nil))
+  (use-package company-quickhelp
+    :custom
+    ;; Load company-quickhelp globally:
+    (company-quickhelp-mode)
+    ;; Time before display of documentation popup:
+    (setq company-quickhelp-delay nil))
 
-(eval-after-load 'company
-  '(define-key company-active-map (kbd "C-c h") #'company-quickhelp-manual-begin))
+  (eval-after-load 'company
+    '(define-key company-active-map (kbd "C-c h") #'company-quickhelp-manual-begin))
+
+  ;; (when (require 'cape nil :noerror)
+  ;;   ;; Setup Cape for better completion-at-point support and more
+
+  ;;   ;; Add useful defaults completion sources from cape
+  ;;   (add-to-list 'completion-at-point-functions #'cape-file)
+  ;;   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+
+  ;;   ;; Silence the pcomplete capf, no errors or messages!
+  ;;   ;; Important for corfu
+  ;;   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
+
+  ;;   ;; Ensure that pcomplete does not write to the buffer
+  ;;   ;; and behaves as a pure `completion-at-point-function'.
+  ;;   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify))
 #+END_SRC
 
 * Org mode
@@ -653,7 +674,7 @@ More on python on emacs [[https://realpython.com/emacs-the-best-python-editor/#e
 #+END_SRC
 * Auto complete emacs
 ** Ivy, Counsel and Smex 
- #+BEGIN_SRC emacs-lisp
+ #+BEGIN_SRC emacs
    (use-package counsel
      :after ivy
      :config (counsel-mode))
@@ -683,7 +704,7 @@ More on python on emacs [[https://realpython.com/emacs-the-best-python-editor/#e
  #+END_SRC
 
 ** Ivy post-frame
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs
 (use-package ivy-posframe
   :init
   (setq ivy-posframe-display-functions-alist
@@ -712,6 +733,7 @@ More on python on emacs [[https://realpython.com/emacs-the-best-python-editor/#e
   :config
   (which-key-mode)) 
 #+END_SRC
+
 * mode line
 #+BEGIN_SRC emacs-lisp
 (use-package time
@@ -878,6 +900,139 @@ More on python on emacs [[https://realpython.com/emacs-the-best-python-editor/#e
 ;; Silence compiler warnings as they can be pretty disruptive (setq comp-async-report-warnings-errors nil)
 #+END_SRC
 
+* Testing
+** Vertico, marginalia and orderless
+It supposed to replace the sections above Ivy with smex and counsel, therefore  for better testing it's wise to turn the others off.
+
+The code is styled and taken from system crafters startup pack, thus
+it looks quite different from my regular config. Also a testing state.
+#+begin_src emacs-lisp
+  ;;; Vertico
+  (when (require 'vertico nil :noerror)
+    (require 'vertico-directory)
+    ;; Cycle back to top/bottom result when the edge is reached
+    (customize-set-variable 'vertico-cycle t)
+
+    ;; Start Vertico
+    (vertico-mode 1))
+
+  ;; The code below is not necessary because those are turn off by default
+  ;; on emacs, however they conflict with vertico and orderless so
+  ;; Is good to remember to turn them off.
+    ;; (with-eval-after-load 'crafted-defaults-config
+    ;;   (fido-mode -1)
+    ;;   (fido-vertical-mode -1)
+    ;;   (icomplete-mode -1)
+    ;;   (icomplete-vertical-mode -1)))
+
+  ;; To allow vertico keep history
+  (use-package savehist
+  :init
+  (savehist-mode))
+
+  ;;; Marginalia
+  (when (require 'marginalia nil :noerror)
+    ;; Configure Marginalia
+    (customize-set-variable 'marginalia-annotators
+			    '(marginalia-annotators-heavy
+			      marginalia-annotators-light
+			      nil))
+    (marginalia-mode 1))
+
+  ;;; Orderless
+  (when (require 'orderless nil :noerror)
+    ;; Set up Orderless for better fuzzy matching
+    (customize-set-variable 'completion-styles '(orderless basic))
+    (customize-set-variable 'completion-category-overrides
+			    '((file (styles . (partial-completion))))))
+#+end_src
+
+** Consult
+Consult provides interactive menus, a bit like swipper but more powerful,
+it has many options like search buffer, line, yank pop... Try them with
+=consult-...= and the menu, for example =consult-yank-pop=.
+
+Here we activate onlythe search lines.
+#+begin_src emacs-lisp
+;; Since Consult doesn't need to be required, we assume the user wants these
+;; setting if it is installed (regardless of the installation method).
+(when (locate-library "consult")
+  ;; Set some consult bindings
+  (keymap-global-set "C-s" 'consult-line)
+  (keymap-set minibuffer-local-map "C-r" 'consult-history)
+
+  (setq completion-in-region-function #'consult-completion-in-region))
+#+end_src
+** Embark
+Embark provides actions on targets, this can be buffers, symbols,
+selected text, etc.
+#+begin_src emacs-lisp
+;; Embark
+(when (require 'embark nil :noerror)
+
+  (keymap-global-set "<remap> <describe-bindings>" #'embark-bindings)
+  (keymap-global-set "C-." 'embark-act)
+
+  ;; Use Embark to show bindings in a key prefix with `C-h`
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  (when (require 'embark-consult nil :noerror)
+    (with-eval-after-load 'embark-consult
+      (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode))))
+#+end_src
+
+** Corfu and cape
+These are tools for autocomplete code, I have my doubts because company works by default on ESS, while corfu do not seem to have support for R. We can anyway try it and search for particular support. For now, we are testing.
+
+Additionally, cape supports corfu but it has support for company too, however I am still not convinced on the need of corfu, I haven't seen it in action enough.
+
+For now we keep company turn off while we testthis.
+#+BEGIN_SRC emacs-lisp
+  ;;; Corfu
+  (when (require 'corfu nil :noerror)
+
+    (unless (display-graphic-p)
+      (when (require 'corfu-terminal nil :noerror)
+	(corfu-terminal-mode +1)))
+
+    ;; Setup corfu for popup like completion
+    (customize-set-variable 'corfu-cycle t)        ; Allows cycling through candidates
+    (customize-set-variable 'corfu-auto t)         ; Enable auto completion
+    (customize-set-variable 'corfu-auto-prefix 2)  ; Complete with less prefix keys
+
+    (global-corfu-mode 1)
+    (when (require 'corfu-popupinfo nil :noerror)
+
+      (corfu-popupinfo-mode 1)
+      (eldoc-add-command #'corfu-insert)
+      (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
+      (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
+      (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle)))
+
+  (when (require 'cape nil :noerror)
+  ;; Setup Cape for better completion-at-point support and more
+
+  ;; Add useful defaults completion sources from cape
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+
+  ;; Silence the pcomplete capf, no errors or messages!
+  ;; Important for corfu
+  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
+
+  ;; Ensure that pcomplete does not write to the buffer
+  ;; and behaves as a pure `completion-at-point-function'.
+  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
+
+  ;; No auto-completion or completion-on-quit in eshell
+  (defun crafted-completion-corfu-eshell ()
+    "Special settings for when using corfu with eshell."
+    (setq-local corfu-quit-at-boundary t
+                corfu-quit-no-match t
+                corfu-auto nil)
+    (corfu-mode))
+  (add-hook 'eshell-mode-hook #'crafted-completion-corfu-eshell))
+#+END_SRC
 * Deprecated
 Next is deprecated for now, but useful to keep
 ** Personal funcs
