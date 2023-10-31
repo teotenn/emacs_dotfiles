@@ -486,7 +486,7 @@ And in general for [[https://lintr.r-lib.org/index.html][lintr]] and [[https://s
  #+END_SRC
 
 * Company (auto complete code)
-#+BEGIN_SRC emacs
+#+BEGIN_SRC emacs-lisp
   (use-package company
     :config
     ;; Turn on company-mode globally:
@@ -952,7 +952,7 @@ Consult provides interactive menus, a bit like swipper but more powerful,
 it has many options like search buffer, line, yank pop... Try them with
 =consult-...= and the menu, for example =consult-yank-pop=.
 
-Here we activate onlythe search lines.
+Here we activate only the search lines.
 #+begin_src emacs-lisp
 ;; Since Consult doesn't need to be required, we assume the user wants these
 ;; setting if it is installed (regardless of the installation method).
@@ -965,7 +965,7 @@ Here we activate onlythe search lines.
 #+end_src
 ** Embark
 Embark provides actions on targets, this can be buffers, symbols,
-selected text, etc.
+selected text, etc. It works well with consult but it requires package embark-consult.
 #+begin_src emacs-lisp
 ;; Embark
 (when (require 'embark nil :noerror)
@@ -989,25 +989,25 @@ Additionally, cape supports corfu but it has support for company too, however I 
 For now we keep company turn off while we testthis.
 #+BEGIN_SRC emacs-lisp
   ;;; Corfu
-  (when (require 'corfu nil :noerror)
+  ;; (when (require 'corfu nil :noerror)
 
-    (unless (display-graphic-p)
-      (when (require 'corfu-terminal nil :noerror)
-	(corfu-terminal-mode +1)))
+  ;;   (unless (display-graphic-p)
+  ;;     (when (require 'corfu-terminal nil :noerror)
+  ;; 	(corfu-terminal-mode +1)))
 
-    ;; Setup corfu for popup like completion
-    (customize-set-variable 'corfu-cycle t)        ; Allows cycling through candidates
-    (customize-set-variable 'corfu-auto t)         ; Enable auto completion
-    (customize-set-variable 'corfu-auto-prefix 2)  ; Complete with less prefix keys
+  ;;   ;; Setup corfu for popup like completion
+  ;;   (customize-set-variable 'corfu-cycle t)        ; Allows cycling through candidates
+  ;;   (customize-set-variable 'corfu-auto t)         ; Enable auto completion
+  ;;   (customize-set-variable 'corfu-auto-prefix 2)  ; Complete with less prefix keys
 
-    (global-corfu-mode 1)
-    (when (require 'corfu-popupinfo nil :noerror)
+  ;;   (global-corfu-mode 1)
+  ;;   (when (require 'corfu-popupinfo nil :noerror)
 
-      (corfu-popupinfo-mode 1)
-      (eldoc-add-command #'corfu-insert)
-      (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
-      (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
-      (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle)))
+  ;;     (corfu-popupinfo-mode 1)
+  ;;     (eldoc-add-command #'corfu-insert)
+  ;;     (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
+  ;;     (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
+  ;;     (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle)))
 
   (when (require 'cape nil :noerror)
   ;; Setup Cape for better completion-at-point support and more
@@ -1022,16 +1022,19 @@ For now we keep company turn off while we testthis.
 
   ;; Ensure that pcomplete does not write to the buffer
   ;; and behaves as a pure `completion-at-point-function'.
-  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
+  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify))
 
+  ;; To explore the section below we need to understand corfu well
+  ;; For now it is conflicting with my previous eshell autocomplete
+  ;;
   ;; No auto-completion or completion-on-quit in eshell
-  (defun crafted-completion-corfu-eshell ()
-    "Special settings for when using corfu with eshell."
-    (setq-local corfu-quit-at-boundary t
-                corfu-quit-no-match t
-                corfu-auto nil)
-    (corfu-mode))
-  (add-hook 'eshell-mode-hook #'crafted-completion-corfu-eshell))
+  ;; (defun crafted-completion-corfu-eshell ()
+  ;;   "Special settings for when using corfu with eshell."
+  ;;   (setq-local corfu-quit-at-boundary t
+  ;;               corfu-quit-no-match t
+  ;;               corfu-auto nil)
+  ;;   (corfu-mode))
+  ;; (add-hook 'eshell-mode-hook #'crafted-completion-corfu-eshell))
 #+END_SRC
 * Deprecated
 Next is deprecated for now, but useful to keep
