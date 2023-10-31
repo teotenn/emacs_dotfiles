@@ -533,6 +533,7 @@ utils::assignInNamespace(\"q\",
 (use-package tabspaces
   :hook (after-init . tabspaces-mode)
   :custom
+  (customize-set-variable 'tabspaces-initialize-project-with-todo nil)
   (customize-set-variable 'tabspaces-default-tab "Base")
   (customize-set-variable 'tabspaces-include-buffers '("*scratch*"))
   (customize-set-variable 'tabspaces-use-filtered-buffers-as-default t))
@@ -548,12 +549,23 @@ utils::assignInNamespace(\"q\",
   (setq modus-themes-italic-constructs t
         modus-themes-bold-constructs t
 	modus-themes-to-toggle '(modus-operandi-tinted modus-vivendi-tinted))
-
+  
+  ;; Org mode headers
+  (setq modus-themes-headings
+	'((1 . (ultrabold 1.2))
+          (2 . (rainbow bold 1.2))	
+	  (3 . (rainbow semibold 1.1))
+          (t . (semilight 1.1))))
+  (setq modus-themes-scale-headings t)
+  
   ;; tab bar
   (setq modus-themes-common-palette-overrides
 	'((bg-tab-bar bg-cyan-nuanced)
 	  (bg-tab-current bg-magenta-intense)
-	  (bg-tab-other bg-cyan-subtle)))
+	  (bg-tab-other bg-cyan-subtle)
+	  (fg-heading-1 blue-warmer)
+          (bg-heading-1 bg-dim)))
+  
   ;; Load the theme of your choice.
   (load-theme 'modus-vivendi-tinted :no-confirm)
   (define-key toggle-keymap (kbd "z") #'modus-themes-toggle)
