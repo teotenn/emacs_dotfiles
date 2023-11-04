@@ -27,13 +27,6 @@
 ;; Allows mark-type-delete
 (delete-selection-mode t)
 
-;; Starting file
-(setq initial-buffer-choice
-      (lambda ()
-	(if (buffer-file-name)
-	    (current-buffer)
-	  (find-file "~/Code/personal_config/org/brujula.org"))))
-
 ;; enable column numbers
 (setq column-number-mode t)
 
@@ -46,7 +39,7 @@
 ;; always allow 'y' instead of 'yes'.
 (setq use-short-answers t)
 
-					; default to utf-8 for all the things
+;; default to utf-8 for all the things
 (set-charset-priority 'unicode)
 (setq locale-coding-system 'utf-8
       coding-system-for-read 'utf-8
@@ -173,7 +166,8 @@
       (setq ispell-list-command "--list")
       (setq ispell-program-name "aspell")))
 
-(use-package magit)
+(use-package magit
+  :defer t)
 
 ;; Config for windows
 (if (eq system-type 'windows-nt)
@@ -195,6 +189,7 @@
       (add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode))))
 
 (use-package cheatsheet
+  :defer t
   :config
   (cheatsheet-add-group 'Info
 			'(:key "C-x l" :description "count-lines-page"))
@@ -246,13 +241,16 @@
   (yas-global-mode 1))
 
 ;; csv-mode is not default anymore
-(use-package csv-mode)
+(use-package csv-mode
+  :defer t)
 
 ;; load screenshot script
 ;; cloned from https://github.com/tecosaur/screenshot
 ;; Require pckgs <transient> and <posframe>
-(use-package transient)
-(use-package posframe)
+(use-package transient
+  :defer t)
+(use-package posframe
+  :defer t)
 
 (defun tt/load-screenshot()
   (interactive)
@@ -271,11 +269,13 @@
 
 ;; neotree
 (use-package neotree
+  :defer t
   :config
   (setq neo-theme 'icons))
 
 ;; htmlize to improve rendering of source code blocks
-(use-package htmlize)
+(use-package htmlize
+  :defer t)
 
 ;; all the icons
 (use-package all-the-icons
@@ -295,6 +295,7 @@
       )
 
 (use-package flymake
+  :defer t
   :config
   (remove-hook 'flymake-diagnostic-functions 'flymake-proc-legacy-flymake))
 
@@ -336,6 +337,7 @@ utils::assignInNamespace(\"q\",
 
 ;; ESS config
 (use-package ess
+  :defer t
   :init
   (setq ess-style 'RStudio)
   :hook ((inferior-ess-mode . tt-inferior-ess-keymap)
@@ -369,17 +371,34 @@ utils::assignInNamespace(\"q\",
 ;;   (setq flycheck-lintr-linters tt/lintr-linters))
 
 (use-package flycheck
+  :defer t
   :if (eq system-type 'windows-nt)
   :init
   (setq flycheck-r-lintr-executable "C:\\Users\\teodorm3\\Bin\\R-4.2.1\\bin\\x64\\R.exe")
   :config
   (setq flycheck-lintr-linters "linters_with_defaults(line_length_linter = line_length_linter(120))"))
 
-;; R markdown
-(use-package polymode)
-(use-package poly-R)
-(use-package poly-markdown)
-(use-package quarto-mode)
+;; Add chunk
+(defun tt-rmarkdown-new-chunk (name)
+  "Insert a new R chunk."
+  (interactive "sChunk name: ")
+  (insert "\n```{r " name "}\n")
+  (save-excursion
+    (newline)
+    (insert "```\n")
+    (previous-line)))
+
+ ;; R markdown
+(use-package polymode
+  :defer t)
+(use-package poly-R
+  :defer t)
+(use-package poly-markdown
+  :defer t
+  :config
+  (define-key markdown-mode-map "\C-c`" 'tt-rmarkdown-new-chunk))
+(use-package quarto-mode
+  :defer t)
 
 ;; MARKDOWN
 (add-to-list 'auto-mode-alist '("\\.md" . poly-markdown-mode))
@@ -390,19 +409,8 @@ utils::assignInNamespace(\"q\",
 (add-to-list 'auto-mode-alist '("\\.Rmd" . poly-markdown+r-mode))
  ;;(autoload 'r-mode "ess-site" "(Autoload)" t)
 
-;; Add chunk
-(defun rmarkdown-new-chunk (name)
-  "Insert a new R chunk."
-  (interactive "sChunk name: ")
-  (insert "\n```{r " name "}\n")
-  (save-excursion
-    (newline)
-    (insert "```\n")
-    (previous-line)))
-;; Map it to C-c `
-(define-key markdown-mode-map "\C-c`" 'rmarkdown-new-chunk)
-
 (use-package company
+  :defer t
   :config
   ;; Turn on company-mode globally:
   (add-hook 'after-init-hook 'global-company-mode)
@@ -424,6 +432,7 @@ utils::assignInNamespace(\"q\",
       company-tooltip-limit 10))
 
 (use-package company-quickhelp
+  :defer t
   :custom
   ;; Load company-quickhelp globally:
   (company-quickhelp-mode)
@@ -450,6 +459,7 @@ utils::assignInNamespace(\"q\",
 
 (use-package org
   :ensure nil
+  :defer t
   :bind
   ("M-q" . toggle-truncate-lines)
   ("C-c a" . org-agenda)
@@ -482,6 +492,7 @@ utils::assignInNamespace(\"q\",
     (setq org-babel-R-command "C:/Users/teodorm3/Bin/R-4.2.1/bin/x64/R --slave --no-save"))
 
 (use-package org-tempo
+  :after (org)
   :ensure nil
   :config
   ;; clocktable
@@ -500,7 +511,8 @@ utils::assignInNamespace(\"q\",
   (add-to-list 'org-structure-template-alist '("rplot" . "src R :session :file figure-N.png :results value graphics file :results output :exports both"))
   (add-to-list 'org-structure-template-alist '("rexport" . "src R :session :results output :exports both")))
 
-(use-package org-transclusion)
+(use-package org-transclusion
+  :defer t)
 
 ;; Use this if not ipython
 ;;(setq python-shell-interpreter "python3")
@@ -508,6 +520,7 @@ utils::assignInNamespace(\"q\",
 (if (eq system-type 'gnu/linux)
     (progn
       (use-package elpy
+	:defer t
 	:if (eq system-type 'gnu/linux)
 	:init
 	(setq elpy-rpc-python-command "python3")
@@ -519,31 +532,35 @@ utils::assignInNamespace(\"q\",
 	(add-to-list 'python-shell-completion-native-disabled-interpreters
 		     "jupyter"))
 
-      (use-package jedi)
+      (use-package jedi
+	:defer t)
 
       ;; Auto formatting help
       ;; Requires to install python "black"
       ;; Use it by calling M-x blacken-buffer
-      (use-package blacken)
+      (use-package blacken
+	:defer t)
 
       ;; Jupyter and iPython
       (use-package ein
+	:defer t
 	:hook (ein:connect-mode-hook . ein:jedi-setup))))
 
 (use-package tabspaces
   :hook (after-init . tabspaces-mode)
-  :custom
+  :init
   (customize-set-variable 'tabspaces-initialize-project-with-todo nil)
+  :custom
   (customize-set-variable 'tabspaces-default-tab "Base")
   (customize-set-variable 'tabspaces-include-buffers '("*scratch*"))
   (customize-set-variable 'tabspaces-use-filtered-buffers-as-default t))
 
 ;; All the icons
-(use-package all-the-icons)
+(use-package all-the-icons
+  :defer t)
 
 ;; Modus Themes ---
 (use-package modus-themes
-  :ensure t
   :config
   ;; Add all your customizations prior to loading the themes
   (setq modus-themes-italic-constructs t
@@ -618,15 +635,8 @@ utils::assignInNamespace(\"q\",
 (prot-modeline-subtle-mode 1)
 
 (use-package esh-autosuggest
-  :hook (eshell-mode . esh-autosuggest-mode))
-
-(setq dired-listing-switches "-aBhl --group-directories-first")
-
-(use-package all-the-icons-dired
   :defer t
-  :hook   (dired-mode . all-the-icons-dired-mode))
-
-(require 'dired-ranger)
+  :hook (eshell-mode . esh-autosuggest-mode))
 
 ;; My keybindings
 (defvar tt-dired-keymap
@@ -637,7 +647,19 @@ utils::assignInNamespace(\"q\",
     map)
   "Key map for dired extensions")
 
-(define-key dired-mode-map (kbd "C-c t") tt-dired-keymap)
+(use-package dired
+  :ensure nil
+  :defer t
+  :config
+  (define-key dired-mode-map (kbd "C-c t") tt-dired-keymap)
+  (setq dired-listing-switches "-aBhl --group-directories-first"))
+
+(use-package all-the-icons-dired
+  :defer t
+  :hook   (dired-mode . all-the-icons-dired-mode))
+
+(use-package dired-ranger
+  :defer t)
 
 ;; Using garbage magic hack.
  (use-package gcmh
