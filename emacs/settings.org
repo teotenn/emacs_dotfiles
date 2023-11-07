@@ -128,6 +128,9 @@ Find system name with =(system-name)=
 
 ;; From emacs 29.1
 (setq show-paren-context-when-offscreen 'overlay)
+
+;; fill columns to 80
+(setq fill-column 80)
 #+END_SRC
 
 ** Personal funcs
@@ -793,7 +796,7 @@ More on python on emacs [[https://realpython.com/emacs-the-best-python-editor/#e
 (setq tab-bar-new-button-show nil)
 #+END_SRC
 * Auto complete emacs
-** Ivy, Counsel and Smex 
+** Ivy, Counsel and Smex
  #+BEGIN_SRC emacs
    (use-package counsel
      :after ivy
