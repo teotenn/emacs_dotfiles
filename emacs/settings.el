@@ -86,6 +86,16 @@
 ;; From emacs 29.1
 (setq show-paren-context-when-offscreen 'overlay)
 
+;; fill columns to 80
+(setq fill-column 80)
+
+;; Prompt password for open gpg keys
+(if (eq system-type 'gnu/linux)
+    (setq epa-pinentry-mode 'loopback))
+;; Requires to create file ~/.gnupg/gpg-agent.conf and add the following lines
+;; allow-emacs-pinentry
+;; allow-loopback-pinentry
+
 ;; personal function for windows
 (defun tt/wrap ()
   "Shortcut to open neotree directly on wrapper"
