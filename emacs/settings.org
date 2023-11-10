@@ -131,6 +131,13 @@ Find system name with =(system-name)=
 
 ;; fill columns to 80
 (setq fill-column 80)
+
+;; Prompt password for open gpg keys
+(if (eq system-type 'gnu/linux)
+    (setq epa-pinentry-mode 'loopback))
+;; Requires to create file ~/.gnupg/gpg-agent.conf and add the following lines
+;; allow-emacs-pinentry
+;; allow-loopback-pinentry
 #+END_SRC
 
 ** Personal funcs

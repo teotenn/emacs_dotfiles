@@ -276,13 +276,15 @@ If a region is selected, continues the selection from the cursor."
 (defun tt-copy-symbol-at-point ()
   "Copy symbol at point without killing it."
   (interactive)
-  (kill-new (thing-at-point 'symbol)))
+  (kill-new (thing-at-point 'symbol))
+  (message "Killed %s" (thing-at-point 'symbol)))
 
 
 (defun tt-copy-word-at-point ()
   "Copy symbol at point without killing it."
   (interactive)
-  (kill-new (thing-at-point 'word)))
+  (kill-new (thing-at-point 'word))
+  (message "Killed %s" (thing-at-point 'word)))
 
 
 (defun tt-delete-word-at-point ()
