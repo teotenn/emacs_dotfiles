@@ -71,11 +71,11 @@ Find system name with =(system-name)=
 (delete-selection-mode t)
 
 ;; Starting file
-(setq initial-buffer-choice
-      (lambda ()
-	(if (buffer-file-name)
-	    (current-buffer)
-	  (find-file "~/Code/personal_config/org/brujula.org"))))
+;; (setq initial-buffer-choice
+;;       (lambda ()
+;; 	(if (buffer-file-name)
+;; 	    (current-buffer)
+;; 	  (find-file "~/Code/personal_config/org/brujula.org"))))
 
 ;; enable column numbers
 (setq column-number-mode t)
@@ -89,7 +89,7 @@ Find system name with =(system-name)=
 ;; always allow 'y' instead of 'yes'.
 (setq use-short-answers t)
 
-					; default to utf-8 for all the things
+;; default to utf-8 for all the things
 (set-charset-priority 'unicode)
 (setq locale-coding-system 'utf-8
       coding-system-for-read 'utf-8
@@ -321,7 +321,9 @@ nil are ignored."
 
 * Magit
 #+begin_src emacs-lisp
-(use-package magit)
+(use-package magit
+  :commands magit-status
+  :bind ("C-x g" . magit-status))
 
 ;; Config for windows
 (if (eq system-type 'windows-nt)
@@ -344,14 +346,15 @@ nil are ignored."
 #+begin_src emacs-lisp
 (if (eq system-type 'gnu/linux)
     (use-package i3wm-config-mode
-      :config
-      (add-to-list 'auto-mode-alist '("/sway/.*config.*/" . i3wm-config-mode))
-      (add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode))))
+      :mode
+      (("/sway/.*config.*/" . i3wm-config-mode)
+      ("/sway/config\\'" . i3wm-config-mode))))
 #+end_src
 * Other packages
 ** Cheatsheet
 #+begin_src emacs-lisp
 (use-package cheatsheet
+  :bind ("C-c s" . cheatsheet-show)
   :config
   (cheatsheet-add-group 'Info
 			'(:key "C-x l" :description "count-lines-page"))
@@ -376,7 +379,6 @@ nil are ignored."
 			'(:key "C-c c" :description "tt/copy-symbol-at-point")
 			'(:key "M-u" :description "make-upcase-at-point")
 			'(:key "C-x C-u" :description "upcase-region")))
-(global-set-key (kbd "C-c s") 'cheatsheet-show)
 #+end_src
 ** Rainbow delimiters
 #+begin_src emacs-lisp
@@ -409,13 +411,16 @@ nil are ignored."
 ** Miscellanea 
 #+BEGIN_SRC emacs-lisp
 ;; csv-mode is not default anymore
-(use-package csv-mode)
+(use-package csv-mode
+  :mode ("\\.csv" . csv-mode))
 
 ;; load screenshot script
 ;; cloned from https://github.com/tecosaur/screenshot
 ;; Require pckgs <transient> and <posframe>
-(use-package transient)
-(use-package posframe)
+(use-package transient
+  :defer t)
+(use-package posframe
+  :defer t)
 
 (defun tt/load-screenshot()
   (interactive)
@@ -434,6 +439,7 @@ nil are ignored."
 
 ;; neotree
 (use-package neotree
+  :commands neotree-dir
   :config
   (setq neo-theme 'icons))
 
@@ -442,6 +448,7 @@ nil are ignored."
 
 ;; all the icons
 (use-package all-the-icons
+  :defer t
   :if (display-graphic-p))
 
 (use-package imenu-list
@@ -1072,7 +1079,7 @@ Here we activate only the search lines.
 ** Embark
 Embark provides actions on targets, this can be buffers, symbols,
 selected text, etc. It works well with consult but it requires package embark-consult.
-#+begin_src emacs-lisp
+#+begin_src
 ;; Embark
 (when (require 'embark nil :noerror)
 
@@ -1093,7 +1100,7 @@ These are tools for autocomplete code, I have my doubts because company works by
 Additionally, cape supports corfu but it has support for company too, however I am still not convinced on the need of corfu, I haven't seen it in action enough.
 
 For now we keep company turn off while we testthis.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC
   ;;; Corfu
   ;; (when (require 'corfu nil :noerror)
 

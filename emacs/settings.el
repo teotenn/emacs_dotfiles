@@ -28,11 +28,11 @@
 (delete-selection-mode t)
 
 ;; Starting file
-(setq initial-buffer-choice
-      (lambda ()
-	(if (buffer-file-name)
-	    (current-buffer)
-	  (find-file "~/Code/personal_config/org/brujula.org"))))
+;; (setq initial-buffer-choice
+;;       (lambda ()
+;; 	(if (buffer-file-name)
+;; 	    (current-buffer)
+;; 	  (find-file "~/Code/personal_config/org/brujula.org"))))
 
 ;; enable column numbers
 (setq column-number-mode t)
@@ -46,7 +46,7 @@
 ;; always allow 'y' instead of 'yes'.
 (setq use-short-answers t)
 
-					; default to utf-8 for all the things
+;; default to utf-8 for all the things
 (set-charset-priority 'unicode)
 (setq locale-coding-system 'utf-8
       coding-system-for-read 'utf-8
@@ -92,6 +92,9 @@
 
 ;; From emacs 29.1
 (setq show-paren-context-when-offscreen 'overlay)
+
+;; fill columns to 80
+(setq fill-column 80)
 
 ;; personal function for windows
 (defun tt/wrap ()
@@ -262,7 +265,9 @@ nil are ignored."
       (setq ispell-list-command "--list")
       (setq ispell-program-name "aspell")))
 
-(use-package magit)
+(use-package magit
+  :commands magit-status
+  :bind ("C-x g" . magit-status))
 
 ;; Config for windows
 (if (eq system-type 'windows-nt)
@@ -279,11 +284,12 @@ nil are ignored."
 
 (if (eq system-type 'gnu/linux)
     (use-package i3wm-config-mode
-      :config
-      (add-to-list 'auto-mode-alist '("/sway/.*config.*/" . i3wm-config-mode))
-      (add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode))))
+      :mode
+      (("/sway/.*config.*/" . i3wm-config-mode)
+      ("/sway/config\\'" . i3wm-config-mode))))
 
 (use-package cheatsheet
+  :bind ("C-c s" . cheatsheet-show)
   :config
   (cheatsheet-add-group 'Info
 			'(:key "C-x l" :description "count-lines-page"))
@@ -308,7 +314,6 @@ nil are ignored."
 			'(:key "C-c c" :description "tt/copy-symbol-at-point")
 			'(:key "M-u" :description "make-upcase-at-point")
 			'(:key "C-x C-u" :description "upcase-region")))
-(global-set-key (kbd "C-c s") 'cheatsheet-show)
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode)
@@ -335,13 +340,16 @@ nil are ignored."
   (yas-global-mode 1))
 
 ;; csv-mode is not default anymore
-(use-package csv-mode)
+(use-package csv-mode
+  :mode ("\\.csv" . csv-mode))
 
 ;; load screenshot script
 ;; cloned from https://github.com/tecosaur/screenshot
 ;; Require pckgs <transient> and <posframe>
-(use-package transient)
-(use-package posframe)
+(use-package transient
+  :defer t)
+(use-package posframe
+  :defer t)
 
 (defun tt/load-screenshot()
   (interactive)
@@ -360,6 +368,7 @@ nil are ignored."
 
 ;; neotree
 (use-package neotree
+  :commands neotree-dir
   :config
   (setq neo-theme 'icons))
 
@@ -368,6 +377,7 @@ nil are ignored."
 
 ;; all the icons
 (use-package all-the-icons
+  :defer t
   :if (display-graphic-p))
 
 (use-package imenu-list
@@ -794,64 +804,3 @@ utils::assignInNamespace(\"q\",
   (keymap-set minibuffer-local-map "C-r" 'consult-history)
 
   (setq completion-in-region-function #'consult-completion-in-region))
-
-;; Embark
-(when (require 'embark nil :noerror)
-
-  (keymap-global-set "<remap> <describe-bindings>" #'embark-bindings)
-  (keymap-global-set "C-." 'embark-act)
-
-  ;; Use Embark to show bindings in a key prefix with `C-h`
-  (setq prefix-help-command #'embark-prefix-help-command)
-
-  (when (require 'embark-consult nil :noerror)
-    (with-eval-after-load 'embark-consult
-      (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode))))
-
-;;; Corfu
-;; (when (require 'corfu nil :noerror)
-
-;;   (unless (display-graphic-p)
-;;     (when (require 'corfu-terminal nil :noerror)
-;; 	(corfu-terminal-mode +1)))
-
-;;   ;; Setup corfu for popup like completion
-;;   (customize-set-variable 'corfu-cycle t)        ; Allows cycling through candidates
-;;   (customize-set-variable 'corfu-auto t)         ; Enable auto completion
-;;   (customize-set-variable 'corfu-auto-prefix 2)  ; Complete with less prefix keys
-
-;;   (global-corfu-mode 1)
-;;   (when (require 'corfu-popupinfo nil :noerror)
-
-;;     (corfu-popupinfo-mode 1)
-;;     (eldoc-add-command #'corfu-insert)
-;;     (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
-;;     (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
-;;     (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle)))
-
-(when (require 'cape nil :noerror)
-;; Setup Cape for better completion-at-point support and more
-
-;; Add useful defaults completion sources from cape
-(add-to-list 'completion-at-point-functions #'cape-file)
-(add-to-list 'completion-at-point-functions #'cape-dabbrev)
-
-;; Silence the pcomplete capf, no errors or messages!
-;; Important for corfu
-(advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
-
-;; Ensure that pcomplete does not write to the buffer
-;; and behaves as a pure `completion-at-point-function'.
-(advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify))
-
-;; To explore the section below we need to understand corfu well
-;; For now it is conflicting with my previous eshell autocomplete
-;;
-;; No auto-completion or completion-on-quit in eshell
-;; (defun crafted-completion-corfu-eshell ()
-;;   "Special settings for when using corfu with eshell."
-;;   (setq-local corfu-quit-at-boundary t
-;;               corfu-quit-no-match t
-;;               corfu-auto nil)
-;;   (corfu-mode))
-;; (add-hook 'eshell-mode-hook #'crafted-completion-corfu-eshell))
