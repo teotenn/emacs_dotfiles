@@ -539,6 +539,7 @@ nil are ignored."
       company-tooltip-limit 10))
 
 (use-package company-quickhelp
+  :after company
   :custom
   ;; Load company-quickhelp globally:
   (company-quickhelp-mode)
