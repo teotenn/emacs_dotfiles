@@ -386,79 +386,88 @@ nil are ignored."
   (setq imenu-list-focus-after-activation t))
 
 ;; Flymake
-(setq tt/lintr-linters
-      "lintr::linters_with_defaults(
-	   line_length_linter = line_length_linter(120),
-	   linters = object_name_linter(styles = c('dotted.case', 'lowercase', 'snake_case'))
-	 )"
-      )
+  (setq tt/lintr-linters
+	"lintr::linters_with_defaults(
+	     line_length_linter = line_length_linter(120),
+	     linters = object_name_linter(styles = c('dotted.case', 'lowercase', 'snake_case'))
+	   )"
+	)
 
-(use-package flymake
-  :config
-  (remove-hook 'flymake-diagnostic-functions 'flymake-proc-legacy-flymake))
+  (use-package flymake
+    :config
+    (remove-hook 'flymake-diagnostic-functions 'flymake-proc-legacy-flymake))
 
-;; ESS ------------------------
-;; R on windows
-(if (eq system-type 'windows-nt)
-    (setq inferior-ess-r-program "C:/Program Files (x86)/R-4.1.2/bin/R.exe"))
+  ;; ESS ------------------------
+  ;; R on windows
+  (if (eq system-type 'windows-nt)
+      (setq inferior-ess-r-program "C:/Program Files (x86)/R-4.1.2/bin/R.exe"))
 
-;; Personal functions for ess
-(defun tt-inferior-ess-keymap ()
-  "Define a keymap for ESS inferior processes to call prev and next command
-   with C-up and C-down respectively"
-  (setq-local ansi-color-for-comint-mode 'filter)
-  (define-key inferior-ess-mode-map [\C-up]
-	      'comint-previous-matching-input-from-input)
-  (define-key inferior-ess-mode-map [\C-down]
-	      'comint-next-matching-input-from-input)
-  (define-key inferior-ess-mode-map [\C-x \t]
-	      'comint-dynamic-complete-filename))
+  ;; Personal functions for ess
+  (defun tt-inferior-ess-keymap ()
+    "Define a keymap for ESS inferior processes to call prev and next command
+     with C-up and C-down respectively"
+    (setq-local ansi-color-for-comint-mode 'filter)
+    (define-key inferior-ess-mode-map [\C-up]
+		'comint-previous-matching-input-from-input)
+    (define-key inferior-ess-mode-map [\C-down]
+		'comint-next-matching-input-from-input)
+    (define-key inferior-ess-mode-map [\C-x \t]
+		'comint-dynamic-complete-filename))
 
-(defun tt-r-ess-init ()
-  "Sends variable `tt-r-profile' to an ESS process"
-  (let ((proc (ess-get-process)))
-    (ess-send-string proc tt-r-profile)))
+  (defun tt-r-ess-init ()
+    "Sends variable `tt-r-profile' to an ESS process"
+    (let ((proc (ess-get-process)))
+      (ess-send-string proc tt-r-profile)))
 
-(defvar tt-r-profile "
-options(help_type = \"text\")\n
-utils::assignInNamespace(\"q\",
-  function(save = \"no\", status = 0, runLast = TRUE) 
-    {.Internal(quit(save, status, runLast))}, 
-  \"base\")
-")
+  (defvar tt-r-profile "
+  options(help_type = \"text\")\n
+  utils::assignInNamespace(\"q\",
+    function(save = \"no\", status = 0, runLast = TRUE) 
+      {.Internal(quit(save, status, runLast))}, 
+    \"base\")
+  ")
 
-(defun tt/shiny-run-app ()
-  "Executes shiny <run_app()> in the inferior-ess-r process."
-  (interactive)
-  (let ((proc (ess-get-process)))
-    (ess-send-string proc "run_app()")))
+  (defun tt/shiny-run-app ()
+    "Executes shiny <run_app()> in the inferior-ess-r process."
+    (interactive)
+    (let ((proc (ess-get-process)))
+      (ess-send-string proc "run_app()")))
 
-;; ESS config
-(use-package ess
-  :init
-  (setq ess-style 'RStudio)
-  :hook ((inferior-ess-mode . tt-inferior-ess-keymap)
-	 (ess-r-post-run . tt-r-ess-init))
-  :bind (("C-c <f5>" . tt/shiny-run-app))
-  :config
-  (setq ess-r-flymake-linters tt/lintr-linters)
-  (setq ess-use-flymake nil)
-  (setq ess-eval-visibly-p t) ; ESS process (print all)
-  (setq ess-ask-for-ess-directory nil)
-  ;; Syntax highlights
-  (setq ess-R-font-lock-keywords
-	'((ess-R-fl-keyword:keywords . t)
-	  (ess-R-fl-keyword:constants . t)
-	  (ess-R-fl-keyword:modifiers . t)
-	  (ess-R-fl-keyword:fun-defs . t)
-	  (ess-R-fl-keyword:assign-ops . t)
-	  (ess-R-fl-keyword:%op% . t)
-	  (ess-fl-keyword:fun-calls . t)
-	  (ess-fl-keyword:numbers . t)
-	  (ess-fl-keyword:operators)
-	  (ess-fl-keyword:delimiters)
-	  (ess-fl-keyword:=)
-	  (ess-R-fl-keyword:F&T . t))))
+  ;; ESS config
+  (use-package ess
+    :defer t
+    :init
+    (setq ess-style 'RStudio)
+    :mode
+    (("\\.[rR]" . ess-r-mode)
+     ("\\.[jJ][lL]" . ess-julia-mode))
+    :hook ((inferior-ess-mode . tt-inferior-ess-keymap)
+	   (ess-r-post-run . tt-r-ess-init))
+    :bind (("C-c <f5>" . tt/shiny-run-app))
+    :config
+    (setq ess-r-flymake-linters tt/lintr-linters)
+    (setq ess-use-flymake nil)
+    (setq ess-eval-visibly-p t) ; ESS process (print all)
+    (setq ess-ask-for-ess-directory nil)
+    ;; Syntax highlights
+    (setq ess-R-font-lock-keywords
+	  '((ess-R-fl-keyword:keywords . t)
+	    (ess-R-fl-keyword:constants . t)
+	    (ess-R-fl-keyword:modifiers . t)
+	    (ess-R-fl-keyword:fun-defs . t)
+	    (ess-R-fl-keyword:assign-ops . t)
+	    (ess-R-fl-keyword:%op% . t)
+	    (ess-fl-keyword:fun-calls . t)
+	    (ess-fl-keyword:numbers . t)
+	    (ess-fl-keyword:operators)
+	    (ess-fl-keyword:delimiters)
+	    (ess-fl-keyword:=)
+	    (ess-R-fl-keyword:F&T . t))))
+
+(if (eq system-type 'gnu/linux)
+    (use-package julia-mode
+      :mode ("\\.[jJ][lL]" . ess-julia-mode)
+      :hook (julia-mode-hook . ess-julia-mode)))
 
 ;; Flycheck for syntax. Not global
 ;;(setq lintr-modifier-function "with_defaults(line_length_linter=NULL)")
@@ -608,6 +617,7 @@ utils::assignInNamespace(\"q\",
     (progn
       (use-package elpy
 	:if (eq system-type 'gnu/linux)
+	:mode ("\\.py" . python-mode)
 	:init
 	(setq elpy-rpc-python-command "python3")
 	:config
@@ -618,12 +628,14 @@ utils::assignInNamespace(\"q\",
 	(add-to-list 'python-shell-completion-native-disabled-interpreters
 		     "jupyter"))
 
-      (use-package jedi)
+      (use-package jedi
+	:after elpy)
 
       ;; Auto formatting help
       ;; Requires to install python "black"
       ;; Use it by calling M-x blacken-buffer
-      (use-package blacken)
+      (use-package blacken
+	:after elpy)
 
       ;; Jupyter and iPython
       (use-package ein
