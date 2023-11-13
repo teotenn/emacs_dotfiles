@@ -517,8 +517,12 @@ nil are ignored."
 
   ;; ESS config
   (use-package ess
+    :defer t
     :init
     (setq ess-style 'RStudio)
+    :mode
+    (("\\.[rR]" . ess-r-mode)
+     ("\\.[jJ][lL]" . ess-julia-mode))
     :hook ((inferior-ess-mode . tt-inferior-ess-keymap)
 	   (ess-r-post-run . tt-r-ess-init))
     :bind (("C-c <f5>" . tt/shiny-run-app))
@@ -541,6 +545,11 @@ nil are ignored."
 	    (ess-fl-keyword:delimiters)
 	    (ess-fl-keyword:=)
 	    (ess-R-fl-keyword:F&T . t))))
+
+(if (eq system-type 'gnu/linux)
+    (use-package julia-mode
+      :mode ("\\.[jJ][lL]" . ess-julia-mode)
+      :hook (julia-mode-hook . ess-julia-mode)))
 #+END_SRC
 
 ** Flycheck
@@ -719,6 +728,7 @@ More on python on emacs [[https://realpython.com/emacs-the-best-python-editor/#e
     (progn
       (use-package elpy
 	:if (eq system-type 'gnu/linux)
+	:mode ("\\.py" . python-mode)
 	:init
 	(setq elpy-rpc-python-command "python3")
 	:config
@@ -729,12 +739,14 @@ More on python on emacs [[https://realpython.com/emacs-the-best-python-editor/#e
 	(add-to-list 'python-shell-completion-native-disabled-interpreters
 		     "jupyter"))
 
-      (use-package jedi)
+      (use-package jedi
+	:after elpy)
 
       ;; Auto formatting help
       ;; Requires to install python "black"
       ;; Use it by calling M-x blacken-buffer
-      (use-package blacken)
+      (use-package blacken
+	:after elpy)
 
       ;; Jupyter and iPython
       (use-package ein
