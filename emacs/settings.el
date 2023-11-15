@@ -517,53 +517,6 @@ nil are ignored."
 ;; Map it to C-c `
 (define-key markdown-mode-map "\C-c`" 'rmarkdown-new-chunk)
 
-(use-package company
-  :config
-  ;; Turn on company-mode globally:
-  (add-hook 'after-init-hook 'global-company-mode)
-  ;; integration for capf
-  ;; (setq completion-at-point-functions
-  ;; 	(list
-  ;; 	 (cape-company-to-capf
-  ;; 	  (apply-partially #'company--multi-backend-adapter
-  ;; 			   '(company-dabbrev company-elisp)))))
-;; More customization options for company:
-(setq company-selection-wrap-around t
-      ;; Align annotations to the right tooltip border:
-      company-tooltip-align-annotations t
-      ;; Idle delay in seconds until completion starts automatically:
-      company-idle-delay 0.45
-      ;; Completion will start after typing two letters:
-      company-minimum-prefix-length 3
-      ;; Maximum number of candidates in the tooltip:
-      company-tooltip-limit 10))
-
-(use-package company-quickhelp
-  :after company
-  :custom
-  ;; Load company-quickhelp globally:
-  (company-quickhelp-mode)
-  ;; Time before display of documentation popup:
-  (setq company-quickhelp-delay nil))
-
-(eval-after-load 'company
-  '(define-key company-active-map (kbd "C-c h") #'company-quickhelp-manual-begin))
-
-;; (when (require 'cape nil :noerror)
-;;   ;; Setup Cape for better completion-at-point support and more
-
-;;   ;; Add useful defaults completion sources from cape
-;;   (add-to-list 'completion-at-point-functions #'cape-file)
-;;   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-
-;;   ;; Silence the pcomplete capf, no errors or messages!
-;;   ;; Important for corfu
-;;   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
-
-;;   ;; Ensure that pcomplete does not write to the buffer
-;;   ;; and behaves as a pure `completion-at-point-function'.
-;;   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify))
-
 (use-package org
   :ensure nil
   :bind
@@ -840,3 +793,51 @@ nil are ignored."
 (keymap-global-set "C-s" 'consult-line)
 (keymap-global-set "M-y" 'consult-yank-pop)
 (keymap-set minibuffer-local-map "C-r" 'consult-history)
+
+;;; Corfu
+(when (require 'corfu nil :noerror)
+
+  (unless (display-graphic-p)
+    (when (require 'corfu-terminal nil :noerror)
+      (corfu-terminal-mode +1)))
+
+  ;; Setup corfu for popup like completion
+  (customize-set-variable 'corfu-cycle t)        ; Allows cycling through candidates
+  (customize-set-variable 'corfu-auto t)         ; Enable auto completion
+  (customize-set-variable 'corfu-auto-prefix 2)  ; Complete with less prefix keys
+
+  (global-corfu-mode 1)
+  (when (require 'corfu-popupinfo nil :noerror)
+
+    (corfu-popupinfo-mode 1)
+    (eldoc-add-command #'corfu-insert)
+    (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
+    (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
+    (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle)))
+
+(when (require 'cape nil :noerror)
+;; Setup Cape for better completion-at-point support and more
+
+;; Add useful defaults completion sources from cape
+(add-to-list 'completion-at-point-functions #'cape-file)
+(add-to-list 'completion-at-point-functions #'cape-dabbrev)
+
+;; Silence the pcomplete capf, no errors or messages!
+;; Important for corfu
+(advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
+
+;; Ensure that pcomplete does not write to the buffer
+;; and behaves as a pure `completion-at-point-function'.
+(advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify))
+
+;; To explore the section below we need to understand corfu well
+;; For now it is conflicting with my previous eshell autocomplete
+;;
+;; No auto-completion or completion-on-quit in eshell
+;; (defun crafted-completion-corfu-eshell ()
+;;   "Special settings for when using corfu with eshell."
+;;   (setq-local corfu-quit-at-boundary t
+;;               corfu-quit-no-match t
+;;               corfu-auto nil)
+;;   (corfu-mode))
+;; (add-hook 'eshell-mode-hook #'crafted-completion-corfu-eshell))
