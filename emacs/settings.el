@@ -103,6 +103,10 @@
 ;; allow-emacs-pinentry
 ;; allow-loopback-pinentry
 
+;; Save a list of recent files visited. (open recent file with C-x f)
+(recentf-mode 1)
+(setq recentf-max-saved-items 100) ;; just 20 is too recent
+
 ;; personal function for windows
 (defun tt/wrap ()
   "Shortcut to open neotree directly on wrapper"
@@ -647,16 +651,6 @@ nil are ignored."
 ;; tab bar mode
 (setq tab-bar-close-button-show nil)
 (setq tab-bar-new-button-show nil)
-
-;; (use-package powerline)
-;; (defvar tt-tabbar-height 20)
-;; (defvar tt-tabbar-left (powerline-wave-right 'tab-bar nil tt-tabbar-height))
-;; (defvar tt-tabbar-right (powerline-wave-left nil 'tab-bar tt-tabbar-height))
-;; (defun tt-tabbar-tab-label-function (tab)
-;;   (powerline-render (list tt-tabbar-left
-;;                           (format " %s  " (car tab))
-;;                           tt-tabbar-right)))
-;; (setq tabbar-tab-label-function #'tt-tabbar-tab-label-function)
 
 (use-package which-key
   :config
