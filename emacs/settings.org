@@ -145,6 +145,10 @@ Find system name with =(system-name)=
 ;; Requires to create file ~/.gnupg/gpg-agent.conf and add the following lines
 ;; allow-emacs-pinentry
 ;; allow-loopback-pinentry
+
+;; Save a list of recent files visited. (open recent file with C-x f)
+(recentf-mode 1)
+(setq recentf-max-saved-items 100) ;; just 20 is too recent
 #+END_SRC
 
 ** Personal funcs
@@ -190,6 +194,7 @@ Find system name with =(system-name)=
      ((string= selected-font "Monospace")
       (tt/set-font-if-found "Cascadia Mono" "Monospace" font-size)))))
 #+end_src
+
 ** Global keybindings
 #+begin_src emacs-lisp
 ;; Keybindings to toggle 
@@ -627,7 +632,7 @@ And in general for [[https://lintr.r-lib.org/index.html][lintr]] and [[https://s
  #+END_SRC
 
 * Company (auto complete code)
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC
   (use-package company
     :config
     ;; Turn on company-mode globally:
@@ -784,6 +789,7 @@ More on python on emacs [[https://realpython.com/emacs-the-best-python-editor/#e
 #+begin_src emacs-lisp
 (use-package tabspaces
   :hook (after-init . tabspaces-mode)
+  :bind ("C-x t w" . tabspaces-command-map)
   :custom
   (customize-set-variable 'tabspaces-initialize-project-with-todo nil)
   (customize-set-variable 'tabspaces-default-tab "Base")
@@ -1113,12 +1119,18 @@ Here we activate only the search lines.
 #+begin_src emacs-lisp
 ;; Since Consult doesn't need to be required, we assume the user wants these
 ;; setting if it is installed (regardless of the installation method).
-(when (locate-library "consult")
-  ;; Set some consult bindings
-  (keymap-global-set "C-s" 'consult-line)
-  (keymap-set minibuffer-local-map "C-r" 'consult-history)
+;; (when (locate-library "consult")
+;;   ;; Set some consult bindings
+;;   (keymap-global-set "C-s" 'consult-line)
+;;   (keymap-set minibuffer-local-map "C-r" 'consult-history)
 
-  (setq completion-in-region-function #'consult-completion-in-region))
+;;   (setq completion-in-region-function #'consult-completion-in-region))
+
+(use-package consult)
+(keymap-global-set "C-s" 'consult-line)
+(keymap-global-set "M-y" 'consult-yank-pop)
+(keymap-set minibuffer-local-map "C-r" 'consult-history)
+
 #+end_src
 ** Embark
 Embark provides actions on targets, this can be buffers, symbols,
@@ -1139,32 +1151,34 @@ selected text, etc. It works well with consult but it requires package embark-co
 #+end_src
 
 ** Corfu and cape
+*GIVING CORFU A SECOND CHANCE*
+
 These are tools for autocomplete code, I have my doubts because company works by default on ESS, while corfu do not seem to have support for R. We can anyway try it and search for particular support. For now, we are testing.
 
 Additionally, cape supports corfu but it has support for company too, however I am still not convinced on the need of corfu, I haven't seen it in action enough.
 
 For now we keep company turn off while we testthis.
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
   ;;; Corfu
-  ;; (when (require 'corfu nil :noerror)
+  (when (require 'corfu nil :noerror)
 
-  ;;   (unless (display-graphic-p)
-  ;;     (when (require 'corfu-terminal nil :noerror)
-  ;; 	(corfu-terminal-mode +1)))
+    (unless (display-graphic-p)
+      (when (require 'corfu-terminal nil :noerror)
+	(corfu-terminal-mode +1)))
 
-  ;;   ;; Setup corfu for popup like completion
-  ;;   (customize-set-variable 'corfu-cycle t)        ; Allows cycling through candidates
-  ;;   (customize-set-variable 'corfu-auto t)         ; Enable auto completion
-  ;;   (customize-set-variable 'corfu-auto-prefix 2)  ; Complete with less prefix keys
+    ;; Setup corfu for popup like completion
+    (customize-set-variable 'corfu-cycle t)        ; Allows cycling through candidates
+    (customize-set-variable 'corfu-auto t)         ; Enable auto completion
+    (customize-set-variable 'corfu-auto-prefix 2)  ; Complete with less prefix keys
 
-  ;;   (global-corfu-mode 1)
-  ;;   (when (require 'corfu-popupinfo nil :noerror)
+    (global-corfu-mode 1)
+    (when (require 'corfu-popupinfo nil :noerror)
 
-  ;;     (corfu-popupinfo-mode 1)
-  ;;     (eldoc-add-command #'corfu-insert)
-  ;;     (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
-  ;;     (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
-  ;;     (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle)))
+      (corfu-popupinfo-mode 1)
+      (eldoc-add-command #'corfu-insert)
+      (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
+      (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
+      (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle)))
 
   (when (require 'cape nil :noerror)
   ;; Setup Cape for better completion-at-point support and more
