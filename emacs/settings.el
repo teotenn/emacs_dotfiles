@@ -651,6 +651,7 @@ nil are ignored."
 
 (use-package tabspaces
   :hook (after-init . tabspaces-mode)
+  :bind ("C-x t w" . tabspaces-command-map)
   :custom
   (customize-set-variable 'tabspaces-initialize-project-with-todo nil)
   (customize-set-variable 'tabspaces-default-tab "Base")
@@ -693,6 +694,16 @@ nil are ignored."
 ;; tab bar mode
 (setq tab-bar-close-button-show nil)
 (setq tab-bar-new-button-show nil)
+
+;; (use-package powerline)
+;; (defvar tt-tabbar-height 20)
+;; (defvar tt-tabbar-left (powerline-wave-right 'tab-bar nil tt-tabbar-height))
+;; (defvar tt-tabbar-right (powerline-wave-left nil 'tab-bar tt-tabbar-height))
+;; (defun tt-tabbar-tab-label-function (tab)
+;;   (powerline-render (list tt-tabbar-left
+;;                           (format " %s  " (car tab))
+;;                           tt-tabbar-right)))
+;; (setq tabbar-tab-label-function #'tt-tabbar-tab-label-function)
 
 (use-package which-key
   :config
@@ -818,9 +829,14 @@ nil are ignored."
 
 ;; Since Consult doesn't need to be required, we assume the user wants these
 ;; setting if it is installed (regardless of the installation method).
-(when (locate-library "consult")
-  ;; Set some consult bindings
-  (keymap-global-set "C-s" 'consult-line)
-  (keymap-set minibuffer-local-map "C-r" 'consult-history)
+;; (when (locate-library "consult")
+;;   ;; Set some consult bindings
+;;   (keymap-global-set "C-s" 'consult-line)
+;;   (keymap-set minibuffer-local-map "C-r" 'consult-history)
 
-  (setq completion-in-region-function #'consult-completion-in-region))
+;;   (setq completion-in-region-function #'consult-completion-in-region))
+
+(use-package consult)
+(keymap-global-set "C-s" 'consult-line)
+(keymap-global-set "M-y" 'consult-yank-pop)
+(keymap-set minibuffer-local-map "C-r" 'consult-history)
