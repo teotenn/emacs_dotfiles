@@ -46,65 +46,48 @@
       ((string-match "SVN-" vc-mode) (-custom-modeline-svn-vc))
       (t (format "%s" vc-mode)))))
 
-;; --------------- From Prot --------------- ;;
-;; Helpers
-(defcustom prot-modeline-string-truncate-length 9
-  "String length after which truncation should be done in small windows."
-  :type 'natnum)
+;; --------------- From powerline --------------- ;;
+;; Define sections using powerline
+(use-package powerline)
 
-(defun prot-modeline--string-truncate-p (str)
-  "Return non-nil if STR should be truncated."
-  (and (< (window-total-width) split-width-threshold)
-       (> (length str) prot-modeline-string-truncate-length)
-       (not (one-window-p :no-minibuffer))))
+(defun tt-powerline-lhs ()
+	 (let* ((active (powerline-selected-window-active))
+                (mode-line-buffer-id (if active 'mode-line-buffer-id 'mode-line-buffer-id-inactive))
+                (mode-line (if active 'mode-line 'mode-line-inactive))
+                (face0 (if active 'powerline-active0 'powerline-inactive0))
+                (face1 (if active 'powerline-active1 'powerline-inactive1))
+                (separator-left (intern (format "powerline-%s-%s"
+                                                (powerline-current-separator)
+                                                (car powerline-default-separator-dir))))
+		(lhs (list (powerline-buffer-id `(mode-line-buffer-id ,face0) 'l)
+                           (funcall separator-left face0 face1)))
+		)
+	   (concat (powerline-render lhs))))
 
-(defun prot-modeline-string-truncate (str)
-  "Return truncated STR, if appropriate, else return STR.
-Truncation is done up to `prot-modeline-string-truncate-length'."
-  (if (prot-modeline--string-truncate-p str)
-      (concat (substring str 0 prot-modeline-string-truncate-length) "...")
-    str))
+(defun tt-powerline-rhs ()
+  (let* ((active (powerline-selected-window-active))
+         (mode-line-buffer-id (if active 'mode-line-buffer-id 'mode-line-buffer-id-inactive))
+         (mode-line (if active 'mode-line 'mode-line-inactive))
+         (face0 (if active 'powerline-active0 'powerline-inactive0))
+         (face1 (if active 'powerline-active1 'powerline-inactive1))
+         (face2 (if active 'powerline-active2 'powerline-inactive2))
+         (separator-left (intern (format "powerline-%s-%s"
+                                         (powerline-current-separator)
+                                         (car powerline-default-separator-dir))))
+         (separator-right (intern (format "powerline-%s-%s"
+                                          (powerline-current-separator)
+                                          (cdr powerline-default-separator-dir))))
+	 (rhs (list (powerline-raw "%4lL:%6p" face1 'l)
+		    (powerline-raw " " face1 'l)
+                    (funcall separator-right face1 face0)
+		    (powerline-raw " " face0)
+                    
+                    (when powerline-display-hud
+                      (powerline-hud face0 face2))
+		    (powerline-raw prot-modeline-misc-info face0 'r)
+                    (powerline-fill face0 0)
+                    )))
+    (concat (powerline-render rhs))))
 
-;;;; Buffer name and modified status
 
-(defun prot-modeline-buffer-identification-face ()
-  "Return appropriate face or face list for `prot-modeline-buffer-identification'."
-  (let ((file (buffer-file-name)))
-    (cond
-     ((and (mode-line-window-selected-p)
-           file
-           (buffer-modified-p))
-      '(italic mode-line-buffer-id))
-     ((and file (buffer-modified-p))
-      'italic)
-     ((mode-line-window-selected-p)
-      'mode-line-buffer-id))))
-
-(defun prot-modeline--buffer-name ()
-  "Return `buffer-name', truncating it if necessary.
-See `prot-modeline-string-truncate'."
-  (when-let ((name (buffer-name)))
-    (prot-modeline-string-truncate name)))
-
-(defun prot-modeline-buffer-name ()
-  "Return buffer name, with read-only indicator if relevant."
-  (let ((name (prot-modeline--buffer-name)))
-    (if buffer-read-only
-        (format "%s %s" (char-to-string #xE0A2) name)
-      name)))
-
-(defun prot-modeline-buffer-name-help-echo ()
-  "Return `help-echo' value for `prot-modeline-buffer-identification'."
-  (concat
-   (or (buffer-file-name)
-       (format "No underlying file.\nDirectory is: %s" default-directory))))
-
-(defvar-local prot-modeline-buffer-identification
-    '(:eval
-      (propertize (prot-modeline-buffer-name)
-                  'face (prot-modeline-buffer-identification-face)
-                  'mouse-face 'mode-line-highlight
-                  'help-echo (prot-modeline-buffer-name-help-echo)))
-  "Mode line construct for identifying the buffer being displayed.
-Propertize the current buffer with the `mode-line-buffer-id'
-face.  Let other buffers have no face.")
+(provide 'tt-modeline)

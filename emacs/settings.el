@@ -688,10 +688,8 @@ nil are ignored."
   (setq display-time-default-load-average nil)
   (add-hook 'after-init-hook #'display-time-mode))
 
-
-;(load "prot-modeline.el")
 (require 'prot-modeline)
-(load "tt-modeline.el")
+(require 'tt-modeline)
 
 (setq mode-line-compact nil) ; Emacs 28
 
@@ -702,19 +700,16 @@ nil are ignored."
                 prot-modeline-input-method
                 prot-modeline-buffer-status
                 " "
-                prot-modeline-buffer-identification
-                "  "
+                (:eval (tt-powerline-lhs))
                 prot-modeline-major-mode
                 prot-modeline-process
                 "  "
                 prot-modeline-vc-branch
                 "  "
-		mode-line-position
-                "  "
                 prot-modeline-align-right
 		(:eval (custom-modeline-region-info))
 		" "
-                prot-modeline-misc-info))
+		(:eval (tt-powerline-rhs))))
 
 (prot-modeline-subtle-mode 1)
 
